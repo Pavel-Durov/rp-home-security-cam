@@ -11,6 +11,7 @@ class FsUtil(object):
     HUMAN_FACIAL = 'human_facial'
     HUMAN_FULL_BODY = 'human_full_body'
     HUMAN_UPPER_BODY = 'human_upper_body'
+    IMG_GLOBAL = 'global'
 
     @staticmethod
     def __create_img_dir(name):
@@ -27,13 +28,15 @@ class FsUtil(object):
         return [FsUtil.CAT_FACIAL,
                 FsUtil.HUMAN_FACIAL,
                 FsUtil.HUMAN_FULL_BODY,
-                FsUtil.HUMAN_UPPER_BODY]
+                FsUtil.HUMAN_UPPER_BODY,
+                FsUtil.IMG_GLOBAL]
 
     @staticmethod
     def save_detection_img(image, folder_name):
         img_name = FsUtil.__generate_img_name();
         full_name = path.join(FsUtil.IMG_DIR, folder_name, img_name)
         cv2.imwrite(full_name, image)
+        return full_name
 
     @staticmethod
     def __generate_img_name():
