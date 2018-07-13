@@ -1,10 +1,13 @@
 import cv2
-import threading
+import motion3
 from camera import VideoCamera
 from fs_util import FsUtil
+from rx import Observable, Observer
 
 class VideoCameraDetector(object):
     def __init__(self, video_camera):
+        self.image_detection_Observable = Observable.create(self.__initObservable)
+
         self.video_camera = video_camera
         self.fullbody = cv2.CascadeClassifier("models/fullbody_recognition_model.xml")
         self.upperbody = cv2.CascadeClassifier("models/upperbody_recognition_model.xml")
@@ -23,6 +26,9 @@ class VideoCameraDetector(object):
     def detectCatFace(self):
         return self.__detect(self.cat_facial)
 
+    def __initObservable(self, observer):
+        self.observer = observer
+
     def __detect(self, classifier):
         frame = self.video_camera.get_frame()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -39,12 +45,13 @@ class VideoCameraDetector(object):
         for (x, y, w, h) in objects:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-    @staticmethod
-    def __detect_and_save_to_fs(detection_func, detection_type):
+    def __detect_and_save_to_fs(self, detection_func, detection_type):
         frame, is_detected = detection_func()
         if is_detected:
             print('Detected:', detection_type)
-            FsUtil.save_detection_img(frame, detection_type)
+            #self.observer.on_next('Detected: ' + detection_type)
+            img_path = FsUtil.save_detection_img(frame, detection_type)
+            self.observer.on_next((img_path, detection_type))
 
     def __detection_co(self):
         while True:
